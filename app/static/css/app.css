@@ -1,0 +1,8 @@
+html, body {
+	background: #ffffff;
+	color: #111111;
+	font-family: system-ui, Arial, sans-serif;
+	margin: 2rem;
+}
+h1 { margin-bottom: 1rem; }
+
