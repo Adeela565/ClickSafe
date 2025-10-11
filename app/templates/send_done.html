@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Campaign sent</h2>
+<p><strong>{{ campaign.name }}</strong> - {{ sent }} message(s) queued via SMTP.</p>
+<p>Subject: <code>{{ campaign.subject }}</code></p>
+
+<p style="margin-top:1rem;">
+	<a href="/send">Back to Send</a>
+</p>
+{% endblock %}
+

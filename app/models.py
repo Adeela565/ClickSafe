@@ -13,13 +13,13 @@ class Campaign(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(200), nullable=False)
 	subject = db.Column(db.String(255))
-	create_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+	created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
 class Event(db.Model):
 	__tablename__ = "events"
 	id = db.Column(db.Integer, primary_key=True)
-	campaign_id = db.Column(db.Integer, db.ForeignKey("campaigns.id"), nullable=False)
-	recipient_id = db.Column(db.Integer, db.ForeignKey("recipients.id"), nullable=False)
+	campaign_id = db.Column(db.Integer, db.ForeignKey("campaigns.id", ondelete="CASCADE"), nullable=False)
+	recipient_id = db.Column(db.Integer, db.ForeignKey("recipients.id", ondelete="CASCADE"), nullable=False)
 	event_type = db.Column(db.String(50), nullable=False)	# 'delivered', 'clicked', 'reported'
 	ip = db.Column(db.String(45))
 	ts = db.Column(db.DateTime(timezone=True), server_default=func.now())

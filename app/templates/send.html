@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Launch Email Campaign</h2>
+
+<form method="post">
+	<div style="margin: 0.5rem 0;">
+		<label>Campaign Name</label><br/>
+		<input name="campaign_name" placeholder="e.g., Demo Campaign" required style="width: 420px;">
+	</div>
+
+	<div style="margin: 0.5rem 0;">
+		<label>Subject</label><br/>
+		<input name="subject" placeholder="Subject line" required style="width: 420px;">
+	</div>
+
+	<div style="margin: 0.5rem 0;>
+		<label>HTML Body</label><br/>
+		<textarea name="html_body" rows="6" style="width: 420pc;">
+<p>Hello from <strong>ClickSafe</strong>!</p>
+<p>This is a test message.</p>
+		</textarea>
+	</div>
+
+	<fieldset style="margin: 0.5rem 0; padding: 0.5rem; border:1px solid #ddd;">
+		<legend>Recipients</legend>
+		<label><input type="checkbox" name="use_all"> Send to all recipients</label>
+		<div style="max-height: 180px; overflow:auto; border:1px solid #eee; padding:0.5rem; margin-top:0.5rem;">
+			{% for r in recipients %}
+				<div>
+					<label>
+						<input type="checkbox" name="recipients" value={{ r.id }}">
+						{{ r.email }} {% if r.name %} ({{ r.name }}) {% endif %}
+					</label>
+				</div>
+			{% else %}
+				<em>No recipients yet. Add some in the database.</em>
+			{% endfor %}
+		</div>
+	</fieldset>
+
+	<button type="submit">Send Campaign</button>
+</form>
+{% endblock %}
