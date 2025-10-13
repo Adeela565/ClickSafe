@@ -1,7 +1,8 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, redirect, url_for, Response, abort
 from .db import db
 from .models import Recipient, Campaign, Event
 from .emailer import send_email
+from datetime import datetime
 
 bp = Blueprint("main", __name__)
 
@@ -32,7 +33,7 @@ def send_campaign():
 
 	for r in send_to:
 		# Tracking link
-		tracking_url = f"{base}/1/{campaign.id}/{r.id}"
+		tracking_url = f"{base}/l/{campaign.id}/{r.id}"
 
 		if "[[TRACKING_URL]]" in html_body:
 			body_for_recipient = html_body.replace("[[TRACKING_URL]]", tracking_url)
@@ -47,3 +48,43 @@ def send_campaign():
 	db.session.commit()
 	return render_template("send_done.html", title="Campaign Sent", campaign=campaign, sent=sent_count)
 
+@bp.route("/l/<int:cid>/<int:rid>", methods=["GET"])
+def track_click(cid: int, rid: int):
+	""" Record a click event for campaign cid and recipient rid, then respond. """
+	# Validate foreign ids exist (keep data clean)
+	campaign = Campaign.query.get(cid)
+	recipient = Recipient.query.get(rid)
+	if not campaign or not recipient:
+		return abort(404)
+
+	# Get client IP (handles proxies too)
+	ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+	if ip and "," in ip: # if behind proxy, take first hop
+		ip = ip.split(",")[0].strip()
+
+	# Avoid duplicate 'clicked' rows for this (cid, rid)
+	already = (Event.query.filter_by(campaign_id=cid, recipient_id=rid, event_type="clicked").first())
+	if not already:
+		db.session.add(Event(campaign_id=cid, recipient_id=rid, event_type="clicked", ip=ip))
+		db.session.commit()
+
+	# Landing page
+	return redirect(url_for("main.landing", cid=cid, rid=rid))
+
+@bp.route("/landing/<int:cid>/<int:rid>")
+def landing(cid: int, rid: int):
+	campaign = Campaign.query.get(cid)
+	recipient = Recipient.query.get(rid)
+	if not campaign or not recipient:
+		return abort(404)
+
+	# Show current time
+	now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+	return render_template(
+		"landing.html",
+		title="Click Recorded",
+		campaign=campaign,
+		recipient=recipient,
+		ts=now_str,
+		ip=request.headers.get("X-Forwarded-For", request.remote_addr),
+	)
