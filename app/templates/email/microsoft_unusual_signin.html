@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Microsoft account unusual sign-in activity</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* Simple, self-contained styling for safe email rendering */
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color:#1f2937; margin:0; padding:0; background:#f3f4f6; }
+    .wrap { max-width:700px; margin:28px auto; background:#ffffff; border:1px solid #e6e9ee; box-shadow:0 1px 0 rgba(16,24,40,0.03); }
+    .header { padding:18px 20px; display:flex; align-items:center; gap:12px; border-bottom:1px solid #eef2f7; background:#ffffff; }
+    .logo { width:36px; height:36px; border-radius:3px; display:inline-block; }
+    .title { font-size:14px; color:#111827; font-weight:600; }
+    .hero { padding:28px 20px; }
+    .hero h1 { color:#0b5bd7; font-weight:600; font-size:36px; margin:0 0 8px 0; line-height:1; }
+    .lead { margin:0 0 14px 0; color:#374151; font-size:15px; }
+    .card { background:#fafafa; border-radius:6px; padding:14px; border:1px solid #f1f5f9; margin:14px 0; font-size:13px; color:#111827; }
+    .k { color:#6b7280; font-weight:600; display:inline-block; width:120px; }
+    .btn { display:inline-block; padding:10px 14px; border-radius:6px; color:#fff; text-decoration:none; font-weight:600; }
+    .btn-primary { background:#0a66c2; }
+    .btn-danger { background:#d0383d; }
+    .muted { color:#6b7280; font-size:12px; margin-top:12px; }
+    .footer { padding:14px 20px; font-size:12px; color:#6b7280; border-top:1px solid #eef2f7; background:#fff; }
+    @media only screen and (max-width:520px) {
+      .hero h1 { font-size:26px; }
+      .k { display:block; width:100%; margin-bottom:6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" role="article" aria-label="Unusual sign-in activity">
+    <div class="header">
+      <!-- Simple, non-branded color-square logo -->
+      <div class="logo" aria-hidden="true" style="background: linear-gradient(0deg,#f97316 0%,#f59e0b 50%, #10b981 100%);"></div>
+      <div>
+        <div class="title">Microsoft account team</div>
+        <div style="font-size:12px;color:#6b7280;">Security notification</div>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h1>Unusual sign-in activity</h1>
+      <p class="lead">We detected something unusual about a recent sign-in to your Microsoft account {{ recipient.name if recipient and recipient.name else "" }}.</p>
+
+      <div class="card" role="region" aria-label="Sign-in details">
+        <div><span class="k">Sign-in details</span></div>
+        <div style="margin-top:10px;">
+          <div><span class="k">Country/region:</span> <span>{{ country or "Unknown" }}</span></div>
+          <div style="margin-top:6px;"><span class="k">IP address:</span> <span>{{ ip or "—" }}</span></div>
+          <div style="margin-top:6px;"><span class="k">Date:</span> <span>{{ date or "—" }}</span></div>
+          <div style="margin-top:6px;"><span class="k">Platform:</span> <span>{{ platform or "—" }}</span></div>
+          <div style="margin-top:6px;"><span class="k">Browser:</span> <span>{{ browser or "—" }}</span></div>
+        </div>
+
+        <p style="margin-top:14px;">A sign-in attempt from a new device was detected. If this was you, please confirm. If not, report the activity immediately.</p>
+
+        <p style="margin-top:10px;">
+          <a class="btn btn-primary" href="{{ tracking_url }}" rel="noopener noreferrer">Confirm Sign-in</a>
+          &nbsp;&nbsp;
+          <a class="btn btn-danger" href="{{ report_url }}" rel="noopener noreferrer">Report the activity</a>
+        </p>
+      </div>
+
+      <p class="muted">To opt out or change where you receive security notifications, <a href="#" style="color:#0a66c2;text-decoration:underline;">click here</a>.</p>
+    </div>
+
+    <div class="footer">
+      <div>Thanks,<br/>The Microsoft account team</div>
+      <div style="margin-top:8px;">This is a simulated message created for employee security training. Do not enter credentials on unfamiliar pages.</div>
+    </div>
+  </div>
+</body>
+</html>
+
