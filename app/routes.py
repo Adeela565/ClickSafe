@@ -4,6 +4,7 @@ from .models import Recipient, Campaign, Event
 from .emailer import send_email
 from datetime import datetime
 from flask import current_app
+import random
 
 bp = Blueprint("main", __name__)
 
@@ -37,50 +38,39 @@ def send_campaign():
 		tracking_url = f"{base}/l/{campaign.id}/{r.id}"
 		report_url   = f"{base}/r/{campaign.id}/{r.id}"
 
-		# select template name from form (default to microsoft_unusual_signin or your template)
-		template_name = request.form.get("email_template") or "microsoft_unusual_signin"
+		# select template name from form 
+		template_name = (request.form.get("email_template"))
 
-		# Option A: try to render the Jinja email template (recommended)
-		try:
-			tmpl = current_app.jinja_env.get_template(f"email/{template_name}.html")
+		tmpl = current_app.jinja_env.get_template(f"email/{template_name}.html")
 
-			# optional realistic fields (you can randomize later)
-			date = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S +0000")
-			country = "Unknown/Unknown"
-			platform = "Windows 10"
-			browser = "Chrome"
-
-			body_for_recipient = tmpl.render(
-			    tracking_url=tracking_url,
-			    report_url=report_url,
-			    recipient=r,
-			    campaign=campaign,
-			    date=date,
-			    country=country,
-			    platform=platform,
-			    browser=browser,
-			    ip="—"
-			)
+		# optional realistic fields (you can randomize later)
+		date = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S +0000")
+		country = random.choice(["Russia", "Canada", "USA", "Mexico", "India", "China"])
+		platform = random.choice(["Windows 10", "Windows 11", "macOS 12"])
+		browser = random.choice(["Chrome", "Firefox", "Edge"])
 		
-		except Exception:
-			# Fallback: replace placeholders in html_body or append links if template missing
-			if html_body and ("[[TRACKING_URL]]" in html_body or "[[REPORT_URL]]" in html_body):
-			    body_for_recipient = (
-				html_body
-				.replace("[[TRACKING_URL]]", tracking_url)
-				.replace("[[REPORT_URL]]", report_url)
-			    )
-			else:
-			    body_for_recipient = (html_body or "") + f"""
-		<p>
-			<a href="{tracking_url}" style="background:#2563eb;color:#fff;padding:.5rem .75rem;border-radius:.375rem;text-decoration:none;display:inline-block;margin-right:.5rem;">Open</a>
-			<a href="{report_url}"   style="background:#ef4444;color:#fff;padding:.5rem .75rem;border-radius:.375rem;text-decoration:none;display:inline-block;">Report this email</a>
-		</p>
-		"""
+		# generate a random ipv4 for realism
+		def _random_ipv4():
+			return ".".join(str(random.randint(10, 250)) for _ in range(4))
+		ip = _random_ipv4()
+
+		body_for_recipient = tmpl.render(
+		    tracking_url=tracking_url,
+		    report_url=report_url,
+		    recipient=r,
+		    campaign=campaign,
+		    date=date,
+		    country=country,
+		    platform=platform,
+		    browser=browser,
+		    ip=ip
+		)
+
 
 		send_email(r.email, subject, body_for_recipient)
 		db.session.add(Event(campaign_id=campaign.id, recipient_id=r.id, event_type="delivered"))
 		sent_count += 1
+		
 		# Record a basic 'delivered' event
 		send_email(r.email, subject, body_for_recipient)
 		db.session.add(Event(campaign_id=campaign.id, recipient_id=r.id, event_type="delivered"))
@@ -197,19 +187,4 @@ def thankyou(cid: int, rid: int):
 		return abort(404)
 	return render_template("thankyou.html", title="Reported", campaign=campaign, recipient=recipient)
 	
-@bp.route("/_preview_microsoft")
-def preview_microsoft():
-    tmpl = current_app.jinja_env.get_template("email/microsoft_unusual_signin.html")
-    sample = {
-        "name": "A. User"
-    }
-    return tmpl.render(
-        tracking_url="#track",
-        report_url="#report",
-        recipient={"name":"A. User"},
-        country="Russia/Moscow",
-        ip="103.225.77.255",
-        date="Wed, 01 Mar 2023 14:43:35 +0000",
-        platform="Windows 10",
-        browser="Firefox"
-    )
+

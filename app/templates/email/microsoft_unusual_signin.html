@@ -45,11 +45,11 @@
       <div class="card" role="region" aria-label="Sign-in details">
         <div><span class="k">Sign-in details</span></div>
         <div style="margin-top:10px;">
-          <div><span class="k">Country/region:</span> <span>{{ country or "Unknown" }}</span></div>
-          <div style="margin-top:6px;"><span class="k">IP address:</span> <span>{{ ip or "—" }}</span></div>
-          <div style="margin-top:6px;"><span class="k">Date:</span> <span>{{ date or "—" }}</span></div>
-          <div style="margin-top:6px;"><span class="k">Platform:</span> <span>{{ platform or "—" }}</span></div>
-          <div style="margin-top:6px;"><span class="k">Browser:</span> <span>{{ browser or "—" }}</span></div>
+          <div><span class="k">Country/region:</span> <span>{{ country }}</span></div>
+          <div style="margin-top:6px;"><span class="k">IP address:</span> <span>{{ ip }}</span></div>
+          <div style="margin-top:6px;"><span class="k">Date:</span> <span>{{ date }}</span></div>
+          <div style="margin-top:6px;"><span class="k">Platform:</span> <span>{{ platform }}</span></div>
+          <div style="margin-top:6px;"><span class="k">Browser:</span> <span>{{ browser }}</span></div>
         </div>
 
         <p style="margin-top:14px;">A sign-in attempt from a new device was detected. If this was you, please confirm. If not, report the activity immediately.</p>
@@ -57,16 +57,20 @@
         <p style="margin-top:10px;">
           <a class="btn btn-primary" href="{{ tracking_url }}" rel="noopener noreferrer">Confirm Sign-in</a>
           &nbsp;&nbsp;
-          <a class="btn btn-danger" href="{{ report_url }}" rel="noopener noreferrer">Report the activity</a>
+          <a class="btn btn-primary" href="{{ tracking_url }}" rel="noopener noreferrer">Report the activity</a>
         </p>
+        
+        <p style="margin-top:14px;">If you believe this email is suspicious, please report it below.</p>
+      		<a class="btn btn-danger" href="{{ report_url }}" rel="noopener noreferrer">Report this Email</a>
+	</p>
       </div>
+      
 
       <p class="muted">To opt out or change where you receive security notifications, <a href="#" style="color:#0a66c2;text-decoration:underline;">click here</a>.</p>
     </div>
 
     <div class="footer">
       <div>Thanks,<br/>The Microsoft account team</div>
-      <div style="margin-top:8px;">This is a simulated message created for employee security training. Do not enter credentials on unfamiliar pages.</div>
     </div>
   </div>
 </body>
