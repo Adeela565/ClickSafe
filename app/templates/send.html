@@ -1,41 +1,165 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Launch Email Campaign</h2>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>{{ title or "Launch Campaign" }} · ClickSafe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<form method="post">
-	<div style="margin: 0.5rem 0;">
-		<label>Campaign Name</label><br/>
-		<input name="campaign_name" placeholder="e.g., Demo Campaign" required style="width: 420px;">
+  <!-- Minimal, clean styling -->
+  <style>
+    :root{
+      --bg:#f9fafb; --card:#ffffff; --text:#1f2937; --muted:#6b7280;
+      --line:#e5e7eb; --primary:#2563eb; --primary-dark:#1d4ed8; --danger:#ef4444;
+      --radius:12px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;}
+    .wrapper{max-width: 980px; margin: 40px auto; padding: 0 16px;}
+    .brand{font-size: 32px; font-weight: 800; margin: 0 0 18px 0;}
+    .subtitle{font-size:18px; color:var(--muted); margin:0 0 24px 0;}
+    .card{background:var(--card); border:1px solid var(--line); border-radius: var(--radius); box-shadow: 0 6px 18px rgba(0,0,0,.06);}
+
+    /* form layout */
+    .form{padding: 24px;}
+    .form h2{margin:0 0 16px 0; font-size:22px}
+    label{font-weight:600; display:block; margin:14px 0 6px}
+    input[type="text"], select, .multiselect{
+      width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px; font-size:16px; background:#fff;
+    }
+    fieldset{border:1px solid var(--line); border-radius:10px; padding:14px 14px 8px; margin-top:16px;}
+    legend{padding:0 8px; font-weight:700;}
+    .recip{display:block; margin:6px 0; font-weight:500}
+    .row{display:flex; gap:12px; flex-wrap:wrap;}
+    .row > .col{flex:1 1 280px;}
+    .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;}
+    .btn{display:inline-block; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-size:16px; text-decoration:none; text-align:center}
+    .btn-primary{background:var(--primary); color:#fff;}
+    .btn-primary:hover{background:var(--primary-dark);}
+    .btn-secondary{background:#64748b; color:#fff;}
+    .btn-outline{background:#fff; color:var(--primary); border:1px solid var(--primary);}
+    .text-muted{color:var(--muted);}
+    .spacer{height:18px}
+
+    /* table */
+    table{width:100%; border-collapse:collapse;}
+    th,td{padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; font-size:14px;}
+    th{background:#f8fafc; font-weight:700;}
+    .table-wrap{padding: 18px 24px 24px;}
+    .table-title{font-size:18px; font-weight:700; margin:0 0 10px}
+
+    /* small helper */
+    .hint{font-size:12px; color:var(--muted); margin-top:4px}
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <h1 class="brand">ClickSafe</h1>
+    <p class="subtitle">Launch a phishing-simulation email campaign, then review results and metrics.</p>
+
+    <!-- Campaign launcher -->
+    <div class="card">
+      <form class="form" method="post" action="{{ url_for('main.send_campaign') }}">
+        <h2>Launch Email Campaign</h2>
+
+        <div class="row">
+          <div class="col">
+            <label for="campaign_name">Campaign Name</label>
+            <input id="campaign_name" type="text" name="campaign_name" placeholder="e.g., Demo Campaign" />
+          </div>
+
+          <div class="col">
+            <label for="subject">Subject</label>
+            <input id="subject" type="text" name="subject" placeholder="Subject line" />
+          </div>
+        </div>
+
+	<div class="template-row" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+	  <div style="flex:1;">
+	    <label for="email_template">Select Email Template</label>
+	    <select id="email_template" name="email_template" style="width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px;">
+	      <option value="microsoft_unusual_signin">Microsoft Sign-in Alert</option>
+	      <option value="rbc_password_disabled">RBC Password Disabled</option>
+	    </select>
+	  </div>
+
+	  <a id="preview-link" class="btn btn-outline" target="_blank"
+	     href="{{ url_for('main.preview_template', template='microsoft_unusual_signin') }}"
+	     style="white-space:nowrap; margin-top:40px;">
+	     Preview Template
+	  </a>
 	</div>
+	<div class="hint">Use the preview to verify branding and links.</div>
 
-	<div style="margin: 0.5rem 0;">
-		<label>Subject</label><br/>
-		<input name="subject" placeholder="Subject line" required style="width: 420px;">
-	</div>
 
-	<label for="email_template">Select Email Template:</label>
-	<select name="email_template" id="email_template" required>
-		<option value="microsoft_unusual_signin">Microsoft Sign-in Alert</option>
-		<option value="rbc_password_disabled">RBC – Password Disabled</option>
-	</select>
+        <fieldset>
+          <legend>Recipients</legend>
+          <label class="recip"><input type="checkbox" name="use_all" /> Send to all recipients</label>
+          {% for r in recipients %}
+            <label class="recip"><input type="checkbox" name="recipients" value="{{ r.id }}" /> {{ r.email }} ({{ r.name }})</label>
+          {% endfor %}
+          <div class="hint">Tip: “Send to all” ignores individual checkboxes.</div>
+        </fieldset>
 
-	<fieldset style="margin: 0.5rem 0; padding: 0.5rem; border:1px solid #ddd;">
-		<legend>Recipients</legend>
-		<label><input type="checkbox" name="use_all"> Send to all recipients</label>
-		<div style="max-height: 180px; overflow:auto; border:1px solid #eee; padding:0.5rem; margin-top:0.5rem;">
-			{% for r in recipients %}
-				<div>
-					<label>
-						<input type="checkbox" name="recipients" value={{ r.id }}">
-						{{ r.email }} {% if r.name %} ({{ r.name }}) {% endif %}
-					</label>
-				</div>
-			{% else %}
-				<em>No recipients yet. Add some in the database.</em>
-			{% endfor %}
-		</div>
-	</fieldset>
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Send Campaign</button>
+          <a class="btn btn-outline" href="{{ url_for('main.results') }}">View Campaign Results</a>
+        </div>
+      </form>
+    </div>
 
-	<button type="submit">Send Campaign</button>
-</form>
-{% endblock %}
+    <div class="spacer"></div>
+
+    <!-- Recent campaigns summary (optional: render only if provided) -->
+    {% if recent_campaigns %}
+    <div class="card">
+      <div class="table-wrap">
+        <div class="table-title">Recent Campaigns</div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Delivered</th>
+              <th>Clicked</th>
+              <th>Reported</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in recent_campaigns %}
+              <tr>
+                <td>#{{ c.id }}</td>
+                <td>{{ c.name }}</td>
+                <td>{{ c.delivered or 0 }}</td>
+                <td>{{ c.clicked or 0 }}</td>
+                <td>{{ c.reported or 0 }}</td>
+                <td>{{ c.created_at or c.create_at }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="actions">
+          <a class="btn btn-secondary" href="{{ url_for('main.results') }}">Open Results Dashboard</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- Template preview behavior -->
+  <script>
+    (function () {
+      const select = document.getElementById('email_template');
+      const preview = document.getElementById('preview-link');
+      const mkHref = (tpl) => `/preview/${encodeURIComponent(tpl)}`;
+      preview.href = mkHref(select.value);
+      select.addEventListener('change', () => {
+        preview.href = mkHref(select.value);
+      });
+    })();
+  </script>
+</body>
+</html>
+

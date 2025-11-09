@@ -1,5 +1,16 @@
 {% extends "base.html" %}
-{% block content %}
-	<p>ClickSafe simulation is running successfully!</p>
-{% endblock %}
+{{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div>
+      {% for category, msg in messages %}
+        <div style="margin:8px 0;padding:8px 12px;border-radius:6px;
+                    {% if category=='success' %}background:#ecfdf5;color:#065f46;border:1px solid #34d399{% endif %}
+                    {% if category=='warning' %}background:#fffbeb;color:#92400e;border:1px solid #fbbf24{% endif %}
+                    {% if category=='danger'  %}background:#fef2f2;color:#991b1b;border:1px solid #f87171{% endif %}">
+          {{ msg }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
 
