@@ -12,9 +12,8 @@ bp = Blueprint("main", __name__)
 @bp.route("/send", methods=["GET", "POST"])
 def send_campaign():
 	if request.method == "GET":
-		# Instead of recipients, load department with counts
-		departments = (Department.query.outerjoin(Recipient).add_columns(Department.id, Department.name, db.func.count(Recipient.id).label("num_recipients")).group_by(Department.id).order_by(Department.name.asc()).all())
-		return render_template("send.html",title="Launch Campaign",departments=departments)
+		recipients = Recipient.query.order_by(Recipient.email.asc()).all()
+		return render_template("send.html", title="Launch Campaign", recipients=recipients)
 
 	# POST: create campaign, send to chosen recipients, record 'delivered'
 	name = (request.form.get("campaign_name") or "Untitled Campaign").strip()
@@ -28,15 +27,9 @@ def send_campaign():
 
 	# Resolve recipients
 	use_all = request.form.get("use_all") == "on"
-	if use_all:
-		send_to = Recipient.query.filter(Recipient.department_id.isnot(None)).all()
-	else:
-		selected_dept_ids = request.form.getlist("departments") # list of strings
-		if not selected_dept_ids:
-			flash("Please select at least one department", "warning")
-			return redirect(url_for("main.send_campaign"))
-			
-		send_to = Recipient.query.filter(Recipient.department_id.in_(selected_dept_ids)).all()
+	selected_ids = request.form.getlist("recipients") # list of string ids
+	send_to = (Recipient.query.all() if use_all or not selected_ids
+		else Recipient.query.filter(Recipient.id.in_(selected_ids)).all())
 
 	sent_count = 0
 	base = request.url_root.rstrip("/")
@@ -81,7 +74,6 @@ def send_campaign():
 
 	db.session.commit()
 	return render_template("send_done.html", title="Campaign Sent", campaign=campaign, sent=sent_count)
-	
 
 @bp.route("/l/<int:cid>/<int:rid>", methods=["GET"])
 def track_click(cid: int, rid: int):
@@ -339,70 +331,6 @@ def preview_template(template):
     return render_template(f"email/{template}.html",
                            tracking_url="#", report_url="#",
                            recipient=None, campaign=None)
-                           
-@bp.route("/departments", methods=["GET", "POST"])
-def manage_departments():
-	# POST: add new department
-	if request.method == "POST":
-		name = request.form.get("name", "").strip()
-		if not name:
-			flash("Department name cannot be empty", "danger")
-		elif Department.query.filter_by(name=name).first():
-			flash("A department with that name already exists", "warning")
-		else:
-			db.session.add(Department(name=name))
-			db.session.commit()
-			flash("Department added", "success")
-		return redirect(url_for("main.manage_departments"))
-		
-	# Get: show list
-	departments = (Department.query.outerjoin(Recipient).add_columns(Department.id, Department.name, db.func.count(Recipient.id).label("num_recipients")).group_by(Department.id).order_by(Department.name.asc()).all())
-	return render_template("departments.html", departments=departments)
-	
-@bp.route("/departments/<int:dept_id>/recipients", methods=["GET", "POST"])
-def manage_department_recipients(dept_id):
-	dept = Department.query.get_or_404(dept_id)
-	
-	if request.method == "POST":
-		email = request.form.get("email", "").strip()
-		name = request.form.get("name", "").strip()
-		
-		if not email:
-			flash("Email is required", "danger")
-		elif Recipient.query.filter_by(email=email).first():
-			flash("That email already exists", "warning")
-		else:
-			r = Recipient(email=email, name=name, department=dept)
-			db.session.add(r)
-			db.session.commit()
-			flash("Recipient added to department", "success")
-		return redirect(url_for("main.manage_department_recipients", dept_id=dept_id))
-		
-	recipients = Recipient.query.filter_by(department_id=dept.id).order_by(Recipient.email.asc()).all()
-	return render_template("department_recipients.html", department=dept, recipients=recipients)
-	
-@bp.route("/departments/<int:dept_id>/recipients/<int:rid>/delete", methods=["POST"])
-def delete_department_recipient(dept_id, rid):
-	dept = Department.query.get_or_404(dept_id)
-	r = Recipient.query.get_or_404(rid)
-	if r.department_id == dept.id:
-		db.session.delete(r)
-		db.session.commit()
-		flash("Recipient removed", "success")
-	return redirect(url_for("main.manage_department_recipients", dept_id=dept_id))
-	
-@bp.route("/departments/<int:dept_id>/delete", methods=["POST"])
-def delete_department(dept_id):
-    dept = Department.query.get_or_404(dept_id)
-    # Optional: clear department_id for recipients first
-    for r in dept.recipients:
-        r.department_id = None
-    db.session.delete(dept)
-    db.session.commit()
-    flash("Department deleted.", "success")
-    return redirect(url_for("main.manage_departments"))
-
-
 
 
 	

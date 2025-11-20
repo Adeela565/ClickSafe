@@ -89,16 +89,20 @@
 	     Preview Template
 	  </a>
 	</div>
-	<div class="hint">Use the preview to verify branding and links.</div>
 
 
         <fieldset>
           <legend>Recipients</legend>
-          <label class="recip"><input type="checkbox" name="use_all" /> Send to all recipients</label>
-          {% for r in recipients %}
-            <label class="recip"><input type="checkbox" name="recipients" value="{{ r.id }}" /> {{ r.email }} ({{ r.name }})</label>
-          {% endfor %}
-          <div class="hint">Tip: “Send to all” ignores individual checkboxes.</div>
+          <label class="checkbox-inline"><input type="checkbox" name="use_all" /> Send to all recipients</label>
+		{% for dept, dept_id, dept_name, num_recipients in departments %}
+		  	<div class="recipient-row">
+		  		<label>
+		  			<input type="checkbox" name="departments" value="{{ dept_id }}">
+		  			{{ dept_name }} ({{ num_recipients }} recipients)
+	  			</label>
+			</div>
+		{% endfor %}
+		<a class="btn btn-outline" href="{{ url_for('main.manage_departments') }}">Manage Departments</a>         		
         </fieldset>
 
         <div class="actions">
@@ -110,43 +114,6 @@
 
     <div class="spacer"></div>
 
-    <!-- Recent campaigns summary (optional: render only if provided) -->
-    {% if recent_campaigns %}
-    <div class="card">
-      <div class="table-wrap">
-        <div class="table-title">Recent Campaigns</div>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Delivered</th>
-              <th>Clicked</th>
-              <th>Reported</th>
-              <th>Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for c in recent_campaigns %}
-              <tr>
-                <td>#{{ c.id }}</td>
-                <td>{{ c.name }}</td>
-                <td>{{ c.delivered or 0 }}</td>
-                <td>{{ c.clicked or 0 }}</td>
-                <td>{{ c.reported or 0 }}</td>
-                <td>{{ c.created_at or c.create_at }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        <div class="actions">
-          <a class="btn btn-secondary" href="{{ url_for('main.results') }}">Open Results Dashboard</a>
-        </div>
-      </div>
-    </div>
-    {% endif %}
-
-  </div>
 
   <!-- Template preview behavior -->
   <script>

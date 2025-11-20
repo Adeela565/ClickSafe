@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Manage Departments</h1>
+
+<h2>Add New Department</h2>
+<form method="post">
+  <input type="text" name="name" placeholder="Department name" required>
+  <button type="submit">Add Department</button>
+</form>
+
+<h2>Existing Departments</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th># Recipients</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for dept, dept_id, dept_name, num_recipients in departments %}
+      <tr>
+        <td>{{ dept_name }}</td>
+        <td>{{ num_recipients }}</td>
+        <td>
+          <a href="{{ url_for('main.manage_department_recipients', dept_id=dept_id) }}">Manage recipients</a>
+
+          <form method="post"
+                action="{{ url_for('main.delete_department', dept_id=dept_id) }}"
+                style="display:inline"
+                onsubmit="return confirm('Delete this department?');">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+     <div class="bar" style="margin:10px 0 16px;">
+    	<a href="{{ url_for('main.send_campaign') }}"
+    		class="btn"
+    		style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:12px 20 px;border-radius:6px;">
+    		Home
+	</a>
+    </div>
+
+{% endblock %}
+
