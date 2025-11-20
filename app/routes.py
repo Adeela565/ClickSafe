@@ -6,6 +6,8 @@ from .emailer import send_email
 from datetime import datetime
 from flask import current_app
 import random
+import csv
+import io
 
 bp = Blueprint("main", __name__)
 
@@ -361,25 +363,98 @@ def manage_departments():
 	
 @bp.route("/departments/<int:dept_id>/recipients", methods=["GET", "POST"])
 def manage_department_recipients(dept_id):
-	dept = Department.query.get_or_404(dept_id)
-	
-	if request.method == "POST":
-		email = request.form.get("email", "").strip()
-		name = request.form.get("name", "").strip()
-		
-		if not email:
-			flash("Email is required", "danger")
-		elif Recipient.query.filter_by(email=email).first():
-			flash("That email already exists", "warning")
-		else:
-			r = Recipient(email=email, name=name, department=dept)
-			db.session.add(r)
-			db.session.commit()
-			flash("Recipient added to department", "success")
-		return redirect(url_for("main.manage_department_recipients", dept_id=dept_id))
-		
-	recipients = Recipient.query.filter_by(department_id=dept.id).order_by(Recipient.email.asc()).all()
-	return render_template("department_recipients.html", department=dept, recipients=recipients)
+    department = Department.query.get_or_404(dept_id)
+
+    if request.method == "POST":
+     
+        # 1) CSV UPLOAD: bulk add recipients (Name + Email only)
+        upload_file = request.files.get("upload_file")
+        if upload_file and upload_file.filename:
+            added = 0
+
+            def add_recipient_from_row(name_val: str, email_val: str):
+                nonlocal added
+                name_val = (name_val or "").strip()
+                email_val = (email_val or "").strip()
+
+                # Skip completely empty lines
+                if not email_val:
+                    return
+
+                # Skip header-like row (e.g., "email" without @)
+                if "email" in email_val.lower() and "@" not in email_val:
+                    return
+
+                # Look up by email; create if needed
+                existing = Recipient.query.filter_by(email=email_val).first()
+                if existing is None:
+                    existing = Recipient(name=name_val or None, email=email_val)
+                    db.session.add(existing)
+                    db.session.flush()  # ensure existing.id is set
+
+                # Attach to department if not already linked
+                if existing not in department.recipients:
+                    department.recipients.append(existing)
+                    added += 1
+
+            # Read CSV as UTF-8 (handles BOM with utf-8-sig)
+            stream = io.StringIO(
+                upload_file.stream.read().decode("utf-8-sig"),
+                newline=""
+            )
+            reader = csv.reader(stream)
+
+            for row in reader:
+                if not row:
+                    continue
+                # Expecting: [Name, Email]
+                name_val = row[0] if len(row) > 0 else ""
+                email_val = row[1] if len(row) > 1 else ""
+                add_recipient_from_row(name_val, email_val)
+
+            db.session.commit()
+            flash(f"Imported {added} recipient(s) into {department.name}.", "success")
+            return redirect(url_for("main.manage_department_recipients", dept_id=dept_id))
+
+        
+        # 2) SINGLE RECIPIENT ADD
+      
+        name = request.form.get("name", "").strip() or None
+        email = request.form.get("email", "").strip()
+
+        if email:
+            recipient = Recipient.query.filter_by(email=email).first()
+            if recipient is None:
+                recipient = Recipient(name=name, email=email)
+                db.session.add(recipient)
+                db.session.flush()
+
+            if recipient not in department.recipients:
+                department.recipients.append(recipient)
+                db.session.commit()
+                flash("Recipient added.", "success")
+            else:
+                flash("Recipient is already in this department.", "info")
+        else:
+            flash("Email is required.", "warning")
+
+        return redirect(url_for("main.manage_department_recipients", dept_id=dept_id))
+
+   
+    # GET – show recipients for this department
+  
+    recipients = (
+        department.recipients.order_by(Recipient.email.asc())
+        if hasattr(department.recipients, "order_by")
+        else sorted(department.recipients, key=lambda r: r.email.lower())
+    )
+
+    return render_template(
+        "department_recipients.html",
+        department=department,
+        recipients=recipients,
+    )
+
 	
 @bp.route("/departments/<int:dept_id>/recipients/<int:rid>/delete", methods=["POST"])
 def delete_department_recipient(dept_id, rid):
@@ -401,6 +476,49 @@ def delete_department(dept_id):
     db.session.commit()
     flash("Department deleted.", "success")
     return redirect(url_for("main.manage_departments"))
+    
+@bp.route("/departments/<int:dept_id>/recipients/<int:rid>/edit",
+          methods=["GET", "POST"])
+def edit_department_recipient(dept_id: int, rid: int):
+    # Get department and recipient, or 404 if not found
+    department = Department.query.get_or_404(dept_id)
+    recipient = Recipient.query.get_or_404(rid)
+
+    # Optional safety check: make sure this recipient belongs to this department
+    if recipient.department_id != department.id:
+        abort(404)
+
+    if request.method == "POST":
+        name = (request.form.get("name") or "").strip()
+        email = (request.form.get("email") or "").strip()
+
+        # Very simple validation – you can improve this later
+        if not email:
+            flash("Email is required.", "error")
+            return redirect(
+                url_for("main.edit_department_recipient",
+                        dept_id=dept_id, rid=rid)
+            )
+
+        # Update in-place – ID stays the same
+        recipient.name = name or None
+        recipient.email = email
+
+        db.session.commit()
+        flash("Recipient updated successfully.", "success")
+
+        return redirect(
+            url_for("main.manage_department_recipients", dept_id=dept_id)
+        )
+
+    # GET: show edit form
+    return render_template(
+        "edit_recipient.html",
+        department=department,
+        recipient=recipient,
+        title="Edit Recipient",
+    )
+
 
 
 

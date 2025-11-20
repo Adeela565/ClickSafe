@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>ClickSafe</h1>
+<h2>Edit Recipient in {{ department.name }}</h2>
+
+<form method="post" style="max-width:400px;">
+  <div style="margin-bottom:8px;">
+    <label for="name">Name</label><br>
+    <input id="name" type="text" name="name"
+           value="{{ recipient.name or '' }}"
+           style="width:100%;">
+  </div>
+
+  <div style="margin-bottom:12px;">
+    <label for="email">Email</label><br>
+    <input id="email" type="email" name="email"
+           value="{{ recipient.email }}"
+           style="width:100%;" required>
+  </div>
+
+  <p><strong>ID #:</strong> {{ recipient.id }} (cannot be changed)</p>
+
+  <button type="submit">Save Changes</button>
+  <a href="{{ url_for('main.manage_department_recipients',
+                      dept_id=department.id) }}">
+    Cancel
+  </a>
+</form>
+
+{% endblock %}
+

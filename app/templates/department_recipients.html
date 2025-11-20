@@ -1,18 +1,49 @@
 {% extends "base.html" %}
 {% block content %}
+
 <h1>Recipients in {{ department.name }}</h1>
 
 <h2>Add Recipient</h2>
 <form method="post">
-  <input type="text" name="name" placeholder="Name (optional)">
-  <input type="email" name="email" placeholder="email@example.com" required>
-  <button type="submit">Add</button>
+    <input type="text"
+           name="name"
+           placeholder="Name">
+    <input type="email"
+           name="email"
+           placeholder="email@example.com"
+           required>
+    <button type="submit">Add</button>
 </form>
 
+<hr>
+
+<!-- Bulk upload section -->
+<form method="post"
+      enctype="multipart/form-data"
+      style="margin-top: 1rem;">
+    <label for="upload_file"><strong>Upload recipients from file</strong></label><br>
+    <input type="file"
+           id="upload_file"
+           name="upload_file"
+           accept=".csv"
+           required>
+    <button type="submit">Upload</button>
+
+    <p style="margin-top: .5rem; font-size: 0.9rem; color: #555;">
+        Tip: Use a CSV file with columns
+        <em>Name</em>, and <em>Email</em>, then upload it here
+        to add multiple recipients at once.
+    </p>
+</form>
+
+<hr>
+
 <h2>Current Recipients</h2>
+
 <table>
   <thead>
     <tr>
+      <th>ID #</th>
       <th>Name</th>
       <th>Email</th>
       <th>Actions</th>
@@ -21,12 +52,32 @@
   <tbody>
     {% for r in recipients %}
       <tr>
+        <td>{{ r.id }}</td>
         <td>{{ r.name or '-' }}</td>
         <td>{{ r.email }}</td>
         <td>
+          <!-- Edit button -->
+          <a href="{{ url_for('main.edit_department_recipient',
+                              dept_id=department.id, rid=r.id) }}"
+             style="
+               display:inline-block;
+               padding:4px 10px;
+               margin-right:4px;
+               background:#0d6efd;
+               color:#fff;
+               border-radius:4px;
+               text-decoration:none;
+               font-size:0.9rem;
+             ">
+            Edit
+          </a>
+
+          <!-- Remove button (unchanged, just sitting next to Edit) -->
           <form method="post"
-                action="{{ url_for('main.delete_department_recipient', dept_id=department.id, rid=r.id) }}"
-                onsubmit="return confirm('Remove this recipient?');">
+                action="{{ url_for('main.delete_department_recipient',
+                                   dept_id=department.id, rid=r.id) }}"
+                onsubmit="return confirm('Remove this recipient?');"
+                style="display:inline;">
             <button type="submit">Remove</button>
           </form>
         </td>
@@ -35,6 +86,8 @@
   </tbody>
 </table>
 
+
 <p><a href="{{ url_for('main.manage_departments') }}">← Back to Departments</a></p>
+
 {% endblock %}
 
