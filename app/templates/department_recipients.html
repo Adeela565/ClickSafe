@@ -1,93 +1,235 @@
 {% extends "base.html" %}
+
+{% block title %}Recipients in {{ department.name }} · ClickSafe{% endblock %}
+
 {% block content %}
 
-<h1>Recipients in {{ department.name }}</h1>
+<style>
+.page-shell {
+    max-width: 1100px;
+    margin: 24px auto 40px;
+    padding: 0 16px;
+}
 
-<h2>Add Recipient</h2>
-<form method="post">
-    <input type="text"
-           name="name"
-           placeholder="Name">
-    <input type="email"
-           name="email"
-           placeholder="email@example.com"
-           required>
-    <button type="submit">Add</button>
-</form>
+.card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    padding: 24px 28px 28px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+}
 
-<hr>
+.page-title {
+    font-size: 1.6rem;
+    font-weight: 650;
+    margin-bottom: 4px;
+}
 
-<!-- Bulk upload section -->
-<form method="post"
-      enctype="multipart/form-data"
-      style="margin-top: 1rem;">
-    <label for="upload_file"><strong>Upload recipients from file</strong></label><br>
-    <input type="file"
-           id="upload_file"
-           name="upload_file"
-           accept=".csv"
-           required>
-    <button type="submit">Upload</button>
+.page-subtitle {
+    color: #6b7280;
+    margin-bottom: 20px;
+}
 
-    <p style="margin-top: .5rem; font-size: 0.9rem; color: #555;">
-        Tip: Use a CSV file with columns
-        <em>Name</em>, and <em>Email</em>, then upload it here
-        to add multiple recipients at once.
-    </p>
-</form>
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 18px;
+    margin-bottom: 10px;
+}
 
-<hr>
+.form-row-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 8px;
+}
 
-<h2>Current Recipients</h2>
+.form-row-inline input[type="text"],
+.form-row-inline input[type="email"] {
+    flex: 1 1 260px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    font-size: 0.95rem;
+}
 
-<table>
-  <thead>
-    <tr>
-      <th>ID #</th>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for r in recipients %}
-      <tr>
-        <td>{{ r.id }}</td>
-        <td>{{ r.name or '-' }}</td>
-        <td>{{ r.email }}</td>
-        <td>
-          <!-- Edit button -->
-          <a href="{{ url_for('main.edit_department_recipient',
-                              dept_id=department.id, rid=r.id) }}"
-             style="
-               display:inline-block;
-               padding:4px 10px;
-               margin-right:4px;
-               background:#0d6efd;
-               color:#fff;
-               border-radius:4px;
-               text-decoration:none;
-               font-size:0.9rem;
-             ">
-            Edit
-          </a>
+.btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 8px 18px;
+    border: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-weight: 500;
+}
 
-          <!-- Remove button (unchanged, just sitting next to Edit) -->
-          <form method="post"
-                action="{{ url_for('main.delete_department_recipient',
-                                   dept_id=department.id, rid=r.id) }}"
-                onsubmit="return confirm('Remove this recipient?');"
-                style="display:inline;">
-            <button type="submit">Remove</button>
-          </form>
-        </td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+.btn-primary:hover {
+    background: #1d4ed8;
+}
 
+.btn-danger {
+    background: #f97373;
+    color: #fff;
+    border-radius: 999px;
+    padding: 6px 14px;
+    border: none;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
 
-<p><a href="{{ url_for('main.manage_departments') }}">← Back to Departments</a></p>
+.btn-danger:hover {
+    background: #ef4444;
+}
+
+.link-button {
+    border-radius: 999px;
+    padding: 6px 14px;
+    border: 1px solid #2563eb;
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 0.85rem;
+    background: #eff6ff;
+    display: inline-block;
+}
+
+.link-button:hover {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.tip-text {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 16px;
+}
+
+.recipient-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6px;
+}
+
+.recipient-table th,
+.recipient-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.95rem;
+}
+
+.recipient-table th {
+    text-align: left;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.recipient-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+</style>
+
+<div class="page-shell">
+    <div class="card">
+        <h1 class="page-title">Recipients in {{ department.name }}</h1>
+        <p class="page-subtitle">
+            Add, bulk-import, or update recipients for this department.
+        </p>
+
+        <a class="back-link" href="{{ url_for('main.manage_departments') }}">
+            ← Back to Departments
+        </a>
+
+        <!-- Add single recipient -->
+        <h2 class="section-title">Add Recipient</h2>
+        <form method="post">
+            <div class="form-row-inline">
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Name"
+                >
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="email@example.com"
+                    required
+                >
+                <button type="submit" class="btn-primary">Add</button>
+            </div>
+        </form>
+
+        <!-- Upload CSV -->
+        <h2 class="section-title" style="margin-top: 22px;">Upload recipients from file</h2>
+        <form method="post" enctype="multipart/form-data">
+            <div class="form-row-inline">
+                <input type="file" name="csv_file" accept=".csv">
+                <button type="submit" class="btn-primary">Upload</button>
+            </div>
+        </form>
+        <p class="tip-text">
+            Tip: Use a CSV file with columns <strong>Name</strong> and <strong>Email</strong>,
+            then upload it here to add multiple recipients at once.
+        </p>
+
+        <!-- Current recipients -->
+        <h2 class="section-title" style="margin-top: 24px;">Current Recipients</h2>
+
+        {% if recipients %}
+        <table class="recipient-table">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">ID #</th>
+                    <th style="width: 30%;">Name</th>
+                    <th style="width: 40%;">Email</th>
+                    <th style="width: 22%;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in recipients %}
+                <tr>
+                    <td>{{ r.id }}</td>
+                    <td>{{ r.name or "—" }}</td>
+                    <td>{{ r.email }}</td>
+                    <td>
+                        <a
+                            href="{{ url_for('main.edit_department_recipient', dept_id=department.id, rid=r.id) }}"
+                            class="link-button"
+                        >
+                            Edit
+                        </a>
+
+                        <form
+                            method="post"
+                            action="{{ url_for('main.delete_department_recipient', dept_id=department.id, rid=r.id) }}"
+                            style="display:inline;"
+                            onsubmit="return confirm('Remove this recipient from {{ department.name }}?');"
+                        >
+                            <button type="submit" class="btn-danger">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>No recipients yet. Add one above or upload a CSV file.</p>
+        {% endif %}
+    </div>
+</div>
 
 {% endblock %}
 

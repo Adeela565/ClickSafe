@@ -17,17 +17,25 @@
     th,td{padding:10px 12px;border-bottom:1px solid #eef2f7;font-size:14px}
     th{background:#f8fafc;text-align:left}
     .ts{white-space:nowrap}
+    
+    .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+    color: #2563eb;
+    text-decoration: none;
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Campaign Results</h1>
     <div class="bar" style="margin:6px 0 14px;">
-    	<a href="{{ url_for('main.send_campaign') }}"
-    		class="btn"
-    		style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:8px 12 px;border-radius:8px;">
-    		Home
-	</a>
+        <a class="back-link" href="{{ url_for('main.send_campaign') }}">
+            ← Back to Campaigns
+        </a>
     </div>
 
     <!-- Filter / Actions -->
@@ -36,7 +44,7 @@
       <select id="campaign_id" name="campaign_id" onchange="this.form.submit()">
         <option value="">All campaigns</option>
         {% for c in campaigns %}
-          <option value="{{ c.id }}" {% if campaign_id==c.id %}selected{% endif %}>#{{ c.id }} — {{ c.name }}</option>
+          <option value="{{ c.id }}" {% if campaign_id==c.id %}selected{% endif %}>{{ c.name }}</option>
         {% endfor %}
       </select>
 
@@ -53,7 +61,7 @@
 		  style="min-width:260px">
 	    <option value="ALL">All campaigns</option>
 	    {% for c in campaigns %}
-	      <option value="{{ c.id }}">#{{ c.id }} — {{ c.name }}</option>
+	      <option value="{{ c.id }}">{{ c.name }}</option>
 	    {% endfor %}
 	  </select>
 
@@ -66,16 +74,15 @@
 
     <!-- Summary statistics -->
     <div class="statbox">
-      <div class="stat"><strong>Delivered</strong><div>{{ total_delivered }}</div></div>
-      <div class="stat"><strong>Clicked</strong><div>{{ total_clicked }}</div></div>
-      <div class="stat"><strong>Reported</strong><div>{{ total_reported }}</div></div>
+      <div class="stat"><strong>Total Delivered</strong><div>{{ total_delivered }}</div></div>
+      <div class="stat"><strong>Total Clicks</strong><div>{{ total_clicked }}</div></div>
+      <div class="stat"><strong>Total Reported</strong><div>{{ total_reported }}</div></div>
     </div>
 
     <!-- Events table (includes timestamp column) -->
     <table>
       <thead>
         <tr>
-          <th>ID</th>
           <th>Campaign</th>
           <th>Recipient</th>
           <th>Event</th>
@@ -86,8 +93,7 @@
       <tbody>
         {% for e in events %}
         <tr>
-          <td>{{ e.event_id }}</td>
-          <td>#{{ e.cid }} — {{ e.campaign_name }}</td>
+          <td>{{ e.campaign_name }}</td>
           <td>{{ e.recipient_email }}</td>
           <td>{{ e.event_type }}</td>
           <td>{{ e.ip or "—" }}</td>

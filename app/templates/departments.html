@@ -1,49 +1,217 @@
 {% extends "base.html" %}
+
+{% block title %}Manage Departments · ClickSafe{% endblock %}
+
 {% block content %}
-<h1>Manage Departments</h1>
 
-<h2>Add New Department</h2>
-<form method="post">
-  <input type="text" name="name" placeholder="Department name" required>
-  <button type="submit">Add Department</button>
-</form>
+<style>
+/* Light, card-style layout similar to the Launch page */
 
-<h2>Existing Departments</h2>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th># Recipients</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for dept, dept_id, dept_name, num_recipients in departments %}
-      <tr>
-        <td>{{ dept_name }}</td>
-        <td>{{ num_recipients }}</td>
-        <td>
-          <a href="{{ url_for('main.manage_department_recipients', dept_id=dept_id) }}">Manage recipients</a>
+.page-shell {
+    max-width: 1100px;
+    margin: 24px auto 40px;
+    padding: 0 16px;
+}
 
-          <form method="post"
-                action="{{ url_for('main.delete_department', dept_id=dept_id) }}"
-                style="display:inline"
-                onsubmit="return confirm('Delete this department?');">
-            <button type="submit">Delete</button>
-          </form>
-        </td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+.card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    padding: 24px 28px 28px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+}
 
-     <div class="bar" style="margin:10px 0 16px;">
-    	<a href="{{ url_for('main.send_campaign') }}"
-    		class="btn"
-    		style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:12px 20 px;border-radius:6px;">
-    		Home
-	</a>
+.page-title {
+    font-size: 1.6rem;
+    font-weight: 650;
+    margin-bottom: 4px;
+}
+
+.page-subtitle {
+    color: #6b7280;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 18px;
+    margin-bottom: 10px;
+}
+
+.form-row-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.form-row-inline input[type="text"] {
+    flex: 1 1 260px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    font-size: 0.95rem;
+}
+
+.btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 8px 18px;
+    border: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.btn-danger {
+    background: #f97373;
+    color: #fff;
+    border-radius: 999px;
+    padding: 6px 14px;
+    border: none;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background: #ef4444;
+}
+
+.link-button {
+    border-radius: 999px;
+    padding: 6px 14px;
+    border: 1px solid #2563eb;
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 0.85rem;
+    background: #eff6ff;
+    display: inline-block;
+}
+
+.link-button:hover {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.tip-text {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 16px;
+}
+
+.dept-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6px;
+}
+
+.dept-table th,
+.dept-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.95rem;
+}
+
+.dept-table th {
+    text-align: left;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.dept-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+</style>
+
+<div class="page-shell">
+    <div class="card">
+        <h1 class="page-title">Manage Departments</h1>
+        <p class="page-subtitle">
+            Group recipients by department and see how many people are in each group.
+        </p>
+
+        <a class="back-link" href="{{ url_for('main.send_campaign') }}">
+            ← Back to Campaigns
+        </a>
+
+        <!-- Add department -->
+        <h2 class="section-title">Add New Department</h2>
+
+        <form method="post" class="add-dept-form">
+            <div class="form-row-inline">
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="e.g., HR, IT, Finance"
+                    required
+                >
+                <button type="submit" class="btn-primary">Add Department</button>
+            </div>
+        </form>
+
+        <!-- Existing departments -->
+        <h2 class="section-title" style="margin-top: 22px;">Existing Departments</h2>
+
+        {% if departments %}
+        <table class="dept-table">
+            <thead>
+                <tr>
+                    <th style="width: 40%;">Name</th>
+                    <th style="width: 20%;"># Recipients</th>
+                    <th style="width: 40%;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dept in departments %}
+                <tr>
+                    <td>{{ dept.name }}</td>
+                    <td>{{ recipient_counts.get(dept.id, 0) }}</td>
+                    <td>
+                        <a
+                            href="{{ url_for('main.manage_department_recipients', dept_id=dept.id) }}"
+                            class="link-button"
+                        >
+                            Manage recipients
+                        </a>
+
+                        <form
+                            method="post"
+                            action="{{ url_for('main.delete_department', dept_id=dept.id) }}"
+                            style="display:inline;"
+                            onsubmit="return confirm('Delete this department and all its recipients?');"
+                        >
+                            <button type="submit" class="btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>No departments yet. Add one above to get started.</p>
+        {% endif %}
     </div>
+</div>
 
 {% endblock %}
 

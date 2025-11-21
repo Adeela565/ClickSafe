@@ -1,11 +1,79 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Campaign sent</h2>
-<p><strong>{{ campaign.name }}</strong> - {{ sent }} message(s) queued via SMTP.</p>
-<p>Subject: <code>{{ campaign.subject }}</code></p>
 
-<p style="margin-top:1rem;">
-	<a href="/send">Back to Send</a>
-</p>
+<style>
+.link-button {
+    border-radius: 999px;
+    padding: 6px 14px;
+    border: 1px solid #2563eb;
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 0.85rem;
+    background: #eff6ff;
+    display: inline-block;
+}
+</style>
+
+<div class="page-shell">
+  <div class="card">
+    <div class="card-header">
+      <h1 class="card-title">Campaign sent</h1>
+      <p class="card-subtitle">
+        Your phishing-simulation emails have been queued for delivery.
+      </p>
+    </div>
+
+    <div class="card-body">
+      <div class="summary-row">
+        <p>
+          <strong>Campaign:</strong>
+          {{ campaign.name or "Untitled Campaign" }}
+        </p>
+        <p>
+          <strong>Subject:</strong>
+          {{ campaign.subject or "(no subject)" }}
+        </p>
+        <p>
+          <strong>Messages queued:</strong>
+          {{ sent }}
+        </p>
+      </div>
+
+      <hr>
+
+      <h2 class="section-title">Recipients</h2>
+
+      {% if recipients %}
+        <p class="muted">
+          The campaign was queued for the following addresses:
+        </p>
+        <ul class="recipient-list">
+          {% for r in recipients %}
+            <li class="recipient-item">
+              <span class="recipient-email">{{ r.email }}</span>
+              {% if r.name %}
+                <span class="recipient-name">({{ r.name }})</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">
+          No recipients were selected for this campaign.
+        </p>
+      {% endif %}
+    </div>
+
+    <div class="card-footer">
+        <a
+            href="{{ url_for('main.send_campaign') }}"
+            class="link-button"
+        >
+            Home
+        </a>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 

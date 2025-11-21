@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Phishing Feedback – VPN & MFA Notice</title>
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+           background: #f3f4f6; margin: 0; padding: 24px; }
+    .page-wrapper { max-width: 900px; margin: 0 auto; }
+    .card { background: #ffffff; border-radius: 12px; padding: 24px 28px 28px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12); border: 1px solid #e5e7eb; }
+    .badge { width: 12px; height: 12px; border-radius: 4px; background: #a855f7;
+             display: inline-block; margin-right: 8px; vertical-align: middle; }
+    .subtitle { font-size: 13px; color: #4b5563; margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr); gap: 20px; }
+    h2 { font-size: 16px; margin-top: 18px; margin-bottom: 8px; color: #111827; }
+    h3 { font-size: 14px; margin-top: 14px; margin-bottom: 6px; color: #111827; }
+    ul { padding-left: 18px; margin: 4px 0 10px; font-size: 13px; color: #374151; }
+    li + li { margin-top: 3px; }
+    .pill-list { border-radius: 10px; border: 1px solid #e5e7eb; padding: 12px 14px; background: #f9fafb; margin-top: 6px; }
+    .pill { font-size: 13px; padding: 6px 9px; border-radius: 999px; border: 1px solid #e5e7eb;
+            display: inline-block; margin: 3px 4px 0 0; background: #ffffff; }
+    .learn-card { border-radius: 10px; border: 1px solid #e5e7eb; padding: 12px 14px; background: #f9fafb;
+                  font-size: 13px; color: #374151; }
+    .learn-card ul { padding-left: 18px; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .footer { text-align: center; margin-top: 16px; font-size: 12px; color: #9ca3af; }
+    .section-divider { border-top: 1px solid #e5e7eb; margin: 18px 0 12px; }
+    .dos-donts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-top: 4px; }
+    .box { border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+    .box.do { background: #ecfdf3; border: 1px solid #bbf7d0; }
+    .box.dont { background: #fef2f2; border: 1px solid #fecaca; }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+  <div class="card">
+    <div>
+      <span class="badge"></span>
+      <strong>That VPN &amp; MFA update email was a phishing simulation.</strong>
+    </div>
+    <p class="subtitle">
+      Attackers often pretend to be IT asking you to “re-enroll MFA” or “update VPN settings.”
+      This simulation showed how those requests can be abused to steal your credentials.
+    </p>
+
+    <div class="grid">
+      <div>
+        <h2>Red flags in this email</h2>
+        <ul>
+          <li><strong>Unexpected IT change</strong> – no prior notice from official IT channels.</li>
+          <li><strong>Pressure to re-enroll MFA or update VPN immediately</strong> or risk losing access.</li>
+          <li><strong>Link did not point to your real corporate VPN/MFA portal</strong> when you hovered over it.</li>
+          <li><strong>Sender address not matching internal IT or security addresses</strong> your company uses.</li>
+          <li><strong>Instructions to bypass normal login flows</strong> (e.g., “turn off MFA first, then…”) – a big red flag.</li>
+        </ul>
+
+        <h2>How to verify IT notices</h2>
+        <div class="pill-list">
+          <div class="pill">Check the IT or Security channel on Teams / intranet</div>
+          <div class="pill">Look for announcements on the official IT status page</div>
+          <div class="pill">Use your usual VPN/MFA app or bookmark instead of the email link</div>
+          <div class="pill">Contact the Service Desk if anything feels off</div>
+        </div>
+
+        <h3>Before acting on any IT request…</h3>
+        <ul>
+          <li>Ask yourself if this matches other communications you’ve seen (town halls, IT notices, etc.).</li>
+          <li>Be wary of emails asking you to log in with personal accounts (e.g., Gmail, personal Microsoft ID).</li>
+          <li>Never approve MFA prompts you did not initiate yourself.</li>
+        </ul>
+
+        <div class="section-divider"></div>
+        <h2>Do’s and Don’ts</h2>
+        <div class="dos-donts">
+          <div class="box do">
+            <h3>Do:</h3>
+            <ul>
+              <li>Use MFA wherever possible, especially for VPN and email.</li>
+              <li>Lock your device if you see unexpected MFA prompts and call IT immediately.</li>
+              <li>Keep your VPN and MFA apps updated via official app stores.</li>
+            </ul>
+          </div>
+          <div class="box dont">
+            <h3>Don’t:</h3>
+            <ul>
+              <li>Enter your work password on portals you reached from an unexpected email.</li>
+              <li>Approve MFA requests that pop up when you’re not logging in.</li>
+              <li>Disable security controls just because an email told you to.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2>Learn more (5–10 minutes)</h2>
+        <div class="learn-card">
+          <ul>
+            <li>
+              <a href="https://phishingquiz.withgoogle.com/" target="_blank" rel="noopener">
+                Google Phishing Quiz (interactive)
+              </a>
+            </li>
+            <li>
+              <a href="https://www.youtube.com/watch?v=Y8a5nB-vy78" target="_blank" rel="noopener">
+                YouTube: MFA fatigue & VPN phishing explained
+              </a>
+            </li>
+            <li>
+              <a href="https://www.getcybersafe.gc.ca/en/secure-your-accounts/multi-factor-authentication" target="_blank" rel="noopener">
+                Get Cyber Safe: Multi-factor authentication
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <h3>Policy reminder</h3>
+        <div class="learn-card">
+          For any IT-related change:
+          <ul>
+            <li>Expect communication from official IT channels, not just email.</li>
+            <li>IT will never ask for your password over email or chat.</li>
+            <li>Report suspicious IT notices to the Service Desk or Security team.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">ClickSafe • Phishing Awareness</div>
+  </div>
+</div>
+</body>
+</html>
+
