@@ -1,31 +1,37 @@
 import os
 from dotenv import load_dotenv
 
+# Load environment variables from .env file (if present)
 load_dotenv()
 
 
-def _bool_env(name: str, default: bool = False) -> bool:
-    """Helper: read boolean env vars like 'True' / 'false' / '1'."""
-    val = os.getenv(name)
-    if val is None:
-        return default
-    return val.strip().lower() in ("1", "true", "yes", "y", "on")
-
-
 class Config:
-    # Core app settings
+    """Base configuration for ClickSafe"""
+
+    # ==== Security ====
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
+
+    # ==== Database ====
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # SMTP / email settings (provider-agnostic; works for Gmail, etc.)
-    SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-    SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-    SMTP_USE_TLS = _bool_env("SMTP_USE_TLS", True)
+    # --- Mailtrap settings (for test / example.com) ---
+    MAILTRAP_HOST = os.getenv("MAILTRAP_HOST", "sandbox.smtp.mailtrap.io")
+    MAILTRAP_PORT = int(os.getenv("MAILTRAP_PORT", 2525))
+    MAILTRAP_USERNAME = os.getenv("MAILTRAP_USERNAME")
+    MAILTRAP_PASSWORD = os.getenv("MAILTRAP_PASSWORD")
+    MAILTRAP_FROM_ADDR = os.getenv("MAILTRAP_FROM_ADDR", "clicksafe@example.com")
+    MAILTRAP_FROM_NAME = os.getenv("MAILTRAP_FROM_NAME", "ClickSafe Test")
 
-    SMTP_USERNAME = os.getenv("SMTP_USERNAME")
-    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+    # --- Gmail settings (for real recipients) ---
+    GMAIL_HOST = os.getenv("GMAIL_HOST", "smtp.gmail.com")
+    GMAIL_PORT = int(os.getenv("GMAIL_PORT", 587))
+    GMAIL_USERNAME = os.getenv("GMAIL_USERNAME")
+    GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD")
+    GMAIL_FROM_ADDR = os.getenv("GMAIL_FROM_ADDR")
+    GMAIL_FROM_NAME = os.getenv("GMAIL_FROM_NAME", "ClickSafe Alerts")
 
-    SMTP_FROM_ADDR = os.getenv("SMTP_FROM_ADDR", SMTP_USERNAME or "")
-    SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "ClickSafe Alerts")
+    # --- Admin login ---
+    ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+    ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "changeme")
 

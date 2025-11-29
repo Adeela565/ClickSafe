@@ -2,66 +2,92 @@ import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Read SMTP settings from environment (so any provider can be used)
-SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "True").strip().lower() in (
-    "1",
-    "true",
-    "yes",
-    "y",
-    "on",
-)
+# --- Mailtrap: used for test addresses like *@example.com --- #
+MAILTRAP_HOST = os.getenv("MAILTRAP_HOST", "sandbox.smtp.mailtrap.io")
+MAILTRAP_PORT = int(os.getenv("MAILTRAP_PORT", "2525"))
+MAILTRAP_USERNAME = os.getenv("MAILTRAP_USERNAME")
+MAILTRAP_PASSWORD = os.getenv("MAILTRAP_PASSWORD")
+MAILTRAP_FROM_ADDR = os.getenv("MAILTRAP_FROM_ADDR", MAILTRAP_USERNAME or "")
+MAILTRAP_FROM_NAME = os.getenv("MAILTRAP_FROM_NAME", "ClickSafe Test")
 
-SMTP_USERNAME = os.getenv("SMTP_USERNAME")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+# --- Gmail: used for real addresses --- #
+GMAIL_HOST = os.getenv("GMAIL_HOST", "smtp.gmail.com")
+GMAIL_PORT = int(os.getenv("GMAIL_PORT", "587"))
+GMAIL_USERNAME = os.getenv("GMAIL_USERNAME")
+GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD")
+GMAIL_FROM_ADDR = os.getenv("GMAIL_FROM_ADDR", GMAIL_USERNAME or "")
+GMAIL_FROM_NAME = os.getenv("GMAIL_FROM_NAME", "ClickSafe Alerts")
 
-SMTP_FROM_ADDR = os.getenv("SMTP_FROM_ADDR", SMTP_USERNAME or "")
-SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "ClickSafe Alerts")
-
-
-def send_email(to_addr: str, subject: str, html_body: str, text_body: str | None = None):
+def _send_via_smtp(host, port, username, password,
+                   from_addr, from_name,
+                   to_addr, subject, html_body, text_body: str | None = None):
     """
-    Send an email via the configured SMTP server.
-
-    - to_addr: recipient email address (string)
-    - subject: email subject
-    - html_body: HTML content for the email
-    - text_body: optional plain-text fallback; if None, a default message is used
+    Low-level helper: send a single HTML email via the given SMTP settings.
     """
     if text_body is None:
-        text_body = (
-            "This is an HTML email. Please open it in an HTML-capable mail client."
-        )
+        text_body = "This is an HTML email. Please open it in an HTML-capable mail client."
 
-    # Build MIME message
     msg = MIMEMultipart("alternative")
-    from_header = (
-        f"{SMTP_FROM_NAME} <{SMTP_FROM_ADDR}>" if SMTP_FROM_NAME else SMTP_FROM_ADDR
-    )
+    from_header = f"{from_name} <{from_addr}>" if from_name else from_addr
 
     msg["From"] = from_header
     msg["To"] = to_addr
     msg["Subject"] = subject
 
-    # Attach plain-text and HTML parts
     msg.attach(MIMEText(text_body, "plain", "utf-8"))
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
-    # Send via SMTP
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as s:
-        if SMTP_USE_TLS:
-            s.ehlo()
-            s.starttls()
-            s.ehlo()
+    with smtplib.SMTP(host, port, timeout=20) as s:
+        s.ehlo()
+        # Both Mailtrap and Gmail use TLS
+        s.starttls()
+        s.ehlo()
 
-        if SMTP_USERNAME and SMTP_PASSWORD:
-            s.login(SMTP_USERNAME, SMTP_PASSWORD)
+        if username and password:
+            s.login(username, password)
 
-        s.sendmail(SMTP_FROM_ADDR, [to_addr], msg.as_string())
+        s.sendmail(from_addr, [to_addr], msg.as_string())
+
+def send_email(to_addr: str, subject: str, html_body: str, text_body: str | None = None):
+    """
+    High-level send function used by the app.
+
+    Routing logic:
+    - If recipient ends with @example.com → send via Mailtrap
+    - Otherwise → send via Gmail (real)
+    """
+    domain = to_addr.split("@")[-1].lower()
+
+    if domain == "example.com":
+        # Route to Mailtrap (test inbox)
+        _send_via_smtp(
+            host=MAILTRAP_HOST,
+            port=MAILTRAP_PORT,
+            username=MAILTRAP_USERNAME,
+            password=MAILTRAP_PASSWORD,
+            from_addr=MAILTRAP_FROM_ADDR,
+            from_name=MAILTRAP_FROM_NAME,
+            to_addr=to_addr,
+            subject=subject,
+            html_body=html_body,
+            text_body=text_body,
+        )
+    else:
+        # Route to Gmail (real inbox)
+        _send_via_smtp(
+            host=GMAIL_HOST,
+            port=GMAIL_PORT,
+            username=GMAIL_USERNAME,
+            password=GMAIL_PASSWORD,
+            from_addr=GMAIL_FROM_ADDR,
+            from_name=GMAIL_FROM_NAME,
+            to_addr=to_addr,
+            subject=subject,
+            html_body=html_body,
+            text_body=text_body,
+        )
 

@@ -4,8 +4,7 @@
   <meta charset="utf-8" />
   <title>{{ title or "Launch Campaign" }} · ClickSafe</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
- 
+  
   <style>
     :root{
       --bg:#f9fafb; --card:#ffffff; --text:#1f2937; --muted:#6b7280;
@@ -13,11 +12,54 @@
       --radius:12px;
     }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;}
-    .wrapper{max-width: 980px; margin: 40px auto; padding: 0 16px;}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .wrapper{
+      max-width: 980px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+
+    /* header / logout */
+    .page-header{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      margin-bottom:1.5rem;
+    }
+    .btn-logout{
+      padding:0.45rem 1.1rem;
+      font-size:0.9rem;
+      text-decoration:none;
+    }
+    
+    .top-bar-link {
+    display: inline-block;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid transparent;
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+    transition: background 0.15s ease, border-color 0.15s ease,
+        box-shadow 0.15s ease, transform 0.05s ease;
+   }
+
     .brand{font-size: 32px; font-weight: 800; margin: 0 0 18px 0;}
     .subtitle{font-size:18px; color:var(--muted); margin:0 0 24px 0;}
-    .card{background:var(--card); border:1px solid var(--line); border-radius: var(--radius); box-shadow: 0 6px 18px rgba(0,0,0,.06);}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 6px 18px rgba(0,0,0,.06);
+    }
 
     /* form layout */
     .form{padding: 24px;}
@@ -32,7 +74,16 @@
     .row{display:flex; gap:12px; flex-wrap:wrap;}
     .row > .col{flex:1 1 280px;}
     .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;}
-    .btn{display:inline-block; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-size:16px; text-decoration:none; text-align:center}
+    .btn{
+      display:inline-block;
+      border:none;
+      padding:10px 14px;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:16px;
+      text-decoration:none;
+      text-align:center
+    }
     .btn-primary{background:var(--primary); color:#fff;}
     .btn-primary:hover{background:var(--primary-dark);}
     .btn-secondary{background:#64748b; color:#fff;}
@@ -40,19 +91,28 @@
     .text-muted{color:var(--muted);}
     .spacer{height:18px}
 
-    /* table */
+    /* table (if you reuse here later) */
     table{width:100%; border-collapse:collapse;}
     th,td{padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; font-size:14px;}
     th{background:#f8fafc; font-weight:700;}
     .table-wrap{padding: 18px 24px 24px;}
     .table-title{font-size:18px; font-weight:700; margin:0 0 10px}
 
-    /* small helper */
     .hint{font-size:12px; color:var(--muted); margin-top:4px}
   </style>
 </head>
 <body>
   <div class="wrapper">
+
+    <!-- top-right logout -->
+    <header class="page-header">
+      {% if session.get('logged_in') %}
+        <a href="{{ url_for('main.logout') }}"
+           class="top-bar-link">
+          Log out
+        </a>
+      {% endif %}
+    </header>
 
     <h1 class="brand">ClickSafe</h1>
     <p class="subtitle">Launch a phishing-simulation email campaign, then review results and metrics.</p>
@@ -62,60 +122,58 @@
       <form class="form" method="post" action="{{ url_for('main.send_campaign') }}">
         <h2>Launch Email Campaign</h2>
 
+        <div class="template-row" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <div style="flex:1;">
+            <label for="email_template">Select Email Template</label>
+            <select id="email_template" name="email_template"
+                    style="width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px;">
+              <option value="microsoft_unusual_signin">Microsoft Sign-in Alert</option>
+              <option value="rbc_password_disabled">RBC Password Disabled</option>
+              <option value="payroll_update">Payroll Update</option>
+              <option value="delivery_notice">Delivery Notice</option>
+              <option value="vpn_mfa_notice">VPN & MFA Notice</option>
+            </select>
+          </div>
 
-	<div class="template-row" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-	  <div style="flex:1;">
-	    <label for="email_template">Select Email Template</label>
-	    <select id="email_template" name="email_template" style="width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px;">
-	      <option value="microsoft_unusual_signin">Microsoft Sign-in Alert</option>
-	      <option value="rbc_password_disabled">RBC Password Disabled</option>
-	      <option value="payroll_update">Payroll Update</option>
-	      <option value="delivery_notice">Delivery Notice</option>
-	      <option value="vpn_mfa_notice">VPN & MFA Notice</option>
-	    </select>
-	  </div>
+          <a id="preview-link" class="btn btn-outline" target="_blank"
+             href="{{ url_for('main.preview_template', template='microsoft_unusual_signin') }}"
+             style="white-space:nowrap; margin-top:40px;">
+             Preview Template
+          </a>
+        </div>
 
-	  <a id="preview-link" class="btn btn-outline" target="_blank"
-	     href="{{ url_for('main.preview_template', template='microsoft_unusual_signin') }}"
-	     style="white-space:nowrap; margin-top:40px;">
-	     Preview Template
-	  </a>
-	</div>
+        <fieldset style="padding:20px 20px 16px;">
+          <legend style="font-weight:700; font-size:17px;">Recipients</legend>
 
+          <!-- Send to all -->
+          <label class="recip" style="display:flex; align-items:center; gap:8px; margin:10px 0;">
+            <input type="checkbox" name="use_all" style="transform:scale(1.2);" />
+            Send to all recipients
+          </label>
 
-	<fieldset style="padding:20px 20px 16px;">
-	  <legend style="font-weight:700; font-size:17px;">Recipients</legend>
+          <!-- Department list -->
+          <div style="margin-top:6px;">
+            {% for dept, dept_id, dept_name, num_recipients in departments %}
+              <label class="recip"
+                     style="display:flex; align-items:center; gap:8px; margin:8px 0; font-weight:500;">
+                <input type="checkbox"
+                       name="departments"
+                       value="{{ dept_id }}"
+                       style="transform:scale(1.2);" />
+                {{ dept_name }} <span class="text-muted">({{ num_recipients }} recipients)</span>
+              </label>
+            {% endfor %}
+          </div>
 
-	  <!-- Send to all -->
-	  <label class="recip" style="display:flex; align-items:center; gap:8px; margin:10px 0;">
-	    <input type="checkbox" name="use_all" style="transform:scale(1.2);" />
-	    Send to all recipients
-	  </label>
-
-	  <!-- Department list -->
-	  <div style="margin-top:6px;">
-	    {% for dept, dept_id, dept_name, num_recipients in departments %}
-	      <label class="recip" 
-		     style="display:flex; align-items:center; gap:8px; margin:8px 0; font-weight:500;">
-		<input type="checkbox" 
-		       name="departments" 
-		       value="{{ dept_id }}"
-		       style="transform:scale(1.2);" />
-		{{ dept_name }} <span class="text-muted">({{ num_recipients }} recipients)</span>
-	      </label>
-	    {% endfor %}
-	  </div>
-
-	  <!-- Manage departments button -->
-	  <div style="margin-top:18px;">
-	    <a class="btn btn-outline" 
-	       style="padding:8px 12px; font-size:15px;"
-	       href="{{ url_for('main.manage_departments') }}">
-	      Manage Departments
-	    </a>
-	  </div>
-	</fieldset>
-
+          <!-- Manage departments button -->
+          <div style="margin-top:18px;">
+            <a class="btn btn-outline"
+               style="padding:8px 12px; font-size:15px;"
+               href="{{ url_for('main.manage_departments') }}">
+              Manage Departments
+            </a>
+          </div>
+        </fieldset>
 
         <div class="actions">
           <button type="submit" class="btn btn-primary">Send Campaign</button>
@@ -125,7 +183,7 @@
     </div>
 
     <div class="spacer"></div>
-
+  </div>
 
   <!-- Template preview behavior -->
   <script>

@@ -1,4 +1,5 @@
-<!doctype html>
+{% extends "base.html" %}
+{% block content %}
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -7,6 +8,7 @@
   <style>
     body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f6f7fb;color:#1f2937}
     .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    .card{background:var(--card); border:1px solid var(--line); border-radius: var(--radius); box-shadow: 0 6px 18px rgba(0,0,0,.06);}
     h1{margin:10px 0}
     .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0 18px}
     select,button{padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;background:#fff}
@@ -27,10 +29,18 @@
     color: #2563eb;
     text-decoration: none;
     }
+    
+    .tip-text {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 16px;
+    }
+    
   </style>
 </head>
 <body>
   <div class="wrap">
+  <div class="card">
     <h1>Campaign Results</h1>
     <div class="bar" style="margin:6px 0 14px;">
         <a class="back-link" href="{{ url_for('main.send_campaign') }}">
@@ -47,11 +57,19 @@
           <option value="{{ c.id }}" {% if campaign_id==c.id %}selected{% endif %}>{{ c.name }}</option>
         {% endfor %}
       </select>
+      </form>
+      
+      <form class="bar" method="get">
+      <label for="event_type"><strong>Filter by Event Type:</strong></label>
+      <select id="event_type" name="event_type" onchange="this.form.submit()">
+        <option value="">All events</option>
+        {% for t in event_types %}
+          <option value="{{ t }}" {% if t == event_type %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+      </form>
 
-      <!-- CSV export keeps same filter via querystring -->
-      <a class="btn" href="/results.csv{% if campaign_id %}?campaign_id={{ campaign_id }}{% endif %}">Download CSV</a>
-    </form>
-    
+    </form>    
 	<form class="bar" method="post" action="/results/delete"
      		onsubmit="return confirm('Delete selected campaigns and all their events? This cannot be undone.');">
 	  <label for="del_campaigns"><strong>Delete Campaigns:</strong></label>
@@ -73,10 +91,26 @@
 
 
     <!-- Summary statistics -->
+    
+    <label for="campaign_id"><strong>Campaign(s) Summary and Details:</strong></label>
+    <div>
+        <p class="tip-text">
+            Tip: Click on each recipients email address to view their campaigns history
+        </p>
+    </div>
+   
+
     <div class="statbox">
       <div class="stat"><strong>Total Delivered</strong><div>{{ total_delivered }}</div></div>
       <div class="stat"><strong>Total Clicks</strong><div>{{ total_clicked }}</div></div>
       <div class="stat"><strong>Total Reported</strong><div>{{ total_reported }}</div></div>
+      <div>
+      	<a class="btn" href="{{ url_for('main.dashboard') }}">View Dashboard</a>
+      </div>
+      <div>
+         <!-- CSV export keeps same filter via querystring -->
+         <a class="btn" href="/results.csv{% if campaign_id %}?campaign_id={{ campaign_id }}{% endif %}">Download CSV</a>
+      </div>
     </div>
 
     <!-- Events table (includes timestamp column) -->
@@ -90,21 +124,33 @@
           <th class="ts">Timestamp</th>
         </tr>
       </thead>
-      <tbody>
-        {% for e in events %}
-        <tr>
-          <td>{{ e.campaign_name }}</td>
-          <td>{{ e.recipient_email }}</td>
-          <td>{{ e.event_type }}</td>
-          <td>{{ e.ip or "—" }}</td>
-          <td class="ts">{{ e.ts }}</td>
-        </tr>
-        {% else %}
-        <tr><td colspan="6" style="text-align:center;color:#6b7280;padding:18px;">No events found.</td></tr>
-        {% endfor %}
-      </tbody>
+	<tbody>
+	  {% for e in events %}
+	  <tr>
+	    <td>{{ e.campaign_name }}</td>
+
+	    <td>
+	      <a href="{{ url_for('main.recipient_history', rid=e.recipient_id) }}">
+		{{ e.recipient_email }}
+	      </a>
+	    </td>
+
+	    <td>{{ e.event_type }}</td>
+	    <td>{{ e.ip or "—" }}</td>
+	    <td class="ts">{{ e.ts }}</td>
+	  </tr>
+	  {% else %}
+	  <tr>
+	    <td colspan="5" style="text-align:center;color:#6b7280;padding:18px;">
+	      No events found.
+	    </td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
     </table>
+  </div>
   </div>
 </body>
 </html>
+{% endblock %}
 

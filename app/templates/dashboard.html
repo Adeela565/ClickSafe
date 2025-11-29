@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="wrapper">
+  <h1 class="brand" style="font-size:1.8rem;">Campaign dashboard</h1>
+  <p class="subtitle">
+    Visual overview of phishing-simulation performance
+  </p>
+
+  <div class="card">
+
+    <div class="bar" style="margin-bottom:1rem;">
+      <a href="{{ url_for('main.results') }}"
+         style="font-size:0.9rem;color:#2563eb;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+        ← Back to Results
+      </a>
+    </div>
+
+    <!-- Click rate over time -->
+    <section style="margin-bottom:2rem;">
+      <h2 style="font-size:1.1rem;margin-bottom:0.5rem;">Click rate over time</h2>
+      <canvas id="clickRateChart" height="80"></canvas>
+    </section>
+
+
+    <!-- Department risk -->
+    <section>
+      <h2 style="font-size:1.1rem;margin-bottom:0.5rem;">Department risk (clicks)</h2>
+      <canvas id="deptRiskChart" height="80"></canvas>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const clickLabels   = {{ click_labels|tojson }};
+  const clickValues   = {{ click_values|tojson }};
+
+  const campLabels    = {{ camp_labels|tojson }};
+  const campDelivered = {{ camp_delivered|tojson }};
+  const campReported  = {{ camp_reported|tojson }};
+
+  const deptLabels    = {{ dept_labels|tojson }};
+  const deptClicks    = {{ dept_clicks|tojson }};
+
+  // 1) Click rate over time
+  new Chart(document.getElementById('clickRateChart'), {
+    type: 'line',
+    data: {
+      labels: clickLabels,
+      datasets: [{
+        label: 'Clicks',
+        data: clickValues,
+        borderWidth: 2,
+        fill: false,
+        tension: 0.3
+      }]
+    },
+    options: {
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+
+
+  // 2) Department risk
+  new Chart(document.getElementById('deptRiskChart'), {
+    type: 'bar',
+    data: {
+      labels: deptLabels,
+      datasets: [{
+        label: 'Clicked events',
+        data: deptClicks,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+</script>
+{% endblock %}
+

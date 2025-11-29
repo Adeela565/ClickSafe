@@ -25,6 +25,11 @@
       .hero h1 { font-size:26px; }
       .k { display:block; width:100%; margin-bottom:6px; }
     }
+    .secondary-link {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 14px;
+    }
   </style>
 </head>
 <body>
@@ -52,17 +57,19 @@
           <div style="margin-top:6px;"><span class="k">Browser:</span> <span>{{ browser }}</span></div>
         </div>
 
-        <p style="margin-top:14px;">A sign-in attempt from a new device was detected. If this was you, please confirm.</p>
+        <p style="margin-top:14px;">A sign-in attempt from a new device was detected. Please sign in to your account to review this event and if it wasn't you, change your password immediately.</p>
 
         <p style="margin-top:10px;">
-          <a class="btn btn-primary" href="{{ tracking_url }}" rel="noopener noreferrer">Confirm Sign-in</a>
+          <a class="btn btn-primary" href="{{ tracking_url }}" rel="noopener noreferrer">Sign-in</a>
         </p>
-        
-        <p style="margin-top:14px;">If you believe this email is suspicious, please report it below.</p>
-      		<a class="btn btn-danger" href="{{ report_url }}" rel="noopener noreferrer">Report this Email</a>
-	</p>
+
+	<p class="secondary-link">
+          If you believe this email is suspicious, please
+          <a href="{{ report_url }}">report this message</a> immediately.
+        </p>
+	
       </div>
-      
+          
 
       <p class="muted">To opt out or change where you receive security notifications, <a href="#" style="color:#0a66c2;text-decoration:underline;">click here</a>.</p>
     </div>

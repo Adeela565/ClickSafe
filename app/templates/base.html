@@ -1,16 +1,160 @@
 <!doctype html>
-
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<title>{{ "ClickSafe" }}</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <meta charset="utf-8" />
+    <title>{{ title or "Launch Campaign" }} · ClickSafe</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Shared site-wide CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+
+    <style>
+        :root {
+            --bg: #f9fafb;
+            --card: #ffffff;
+            --text: #111827;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --danger: #ef4444;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Page wrapper fills 100% height */
+        .page {
+            min-height: 100vh;
+            background: var(--bg);
+        }
+
+        /* Top bar */
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem 0;
+        }
+
+        .top-bar-link {
+            display: inline-block;
+            padding: 0.4rem 0.9rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid transparent;
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+            transition: 0.15s ease;
+        }
+
+        .top-bar-link:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .top-bar-link.secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            box-shadow: none;
+        }
+
+        .top-bar-link.secondary:hover {
+            background: rgba(37, 99, 235, 0.06);
+        }
+
+        /* Shared layout blocks used by pages */
+        .wrapper {
+            max-width: 1120px;
+            margin: 3rem auto 4rem;
+            padding: 0 16px;
+        }
+
+        .brand {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: var(--muted);
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--line);
+            padding: 24px 32px;
+            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin: 14px 0 6px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: 1px solid var(--primary);
+            background: var(--primary);
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: 0.15s ease;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        td, th {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--line);
+            font-size: 14px;
+        }
+        th { background: #f3f4f6; }
+    </style>
 </head>
+
 <body>
-	<main>
-		{% block content %}{% endblock %}
-	</main>
+<div class="page">
+
+    <header class="top-bar">
+        {% if session.get('logged_in') %}
+            <a href="{{ url_for('main.send_campaign') }}" class="top-bar-link">Home</a>
+            <a href="{{ url_for('main.logout') }}" class="top-bar-link secondary">Log out</a>
+        {% endif %}
+    </header>
+
+    {% block content %}{% endblock %}
+
+</div>
 </body>
 </html>
 
